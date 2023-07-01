@@ -5,8 +5,6 @@ section .data
 section .text
     global _start
 
-
-
 _start:
     ; call to function print
     push len
@@ -16,21 +14,16 @@ _start:
 
     ; exit
     mov eax, 1
-    xor ebx, ebx
-    int 0x80
+    mov ebx, 0
+    int 80h
 
 print:
-    ; Argumentos:
-    ; [ebp+8]: msg address
-    ; [ebp+12]: msg size
-    push ebp
-    mov ebp, esp
+    ; Args: len, msg
 
     mov eax, 4
     mov ebx, 1
-    mov edx, [ebp+12]
-    mov ecx, [ebp+8]
-    int 0x80
+    mov ecx, [esp+4]
+    mov edx, [esp+8]
+    int 80h
 
-    pop ebp
     ret
