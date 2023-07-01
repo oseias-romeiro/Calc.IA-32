@@ -4,7 +4,6 @@ Implementação de um calculadora em Assembly Intel IA-32 de números de 2 preci
 ## Executando
 
 ```shell
-nasm -f elf32 calculator.asm
-ld -m elf_i386 -o calculator calculator.o
-./calculator
+make all
+./bin/calculator.out
 ```
