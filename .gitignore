@@ -1,0 +1,7 @@
+# binaries
+bin/*.out
+# objects
+obj/*.o
+
+# IDE
+.vscode
