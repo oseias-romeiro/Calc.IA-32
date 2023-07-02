@@ -1,5 +1,5 @@
 section .data
-    hello db 'Hello, world!', 0Ah
+    hello db 'Hello, world!', 0Dh, 0Ah
     len equ $-hello
 
 section .text
@@ -20,10 +20,10 @@ _start:
 print:
     ; Args: len, msg
 
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, [esp+4]
-    mov edx, [esp+8]
+    mov eax, 4       ; write
+    mov ebx, 1       ; out
+    mov ecx, [esp+4]; ptr msg
+    mov edx, [esp+8]; ptr len
     int 80h
 
     ret
