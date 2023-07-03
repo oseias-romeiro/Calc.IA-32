@@ -38,6 +38,12 @@ section .bss
 
 
 section .text
+    extern soma
+    extern subtracao
+    extern mult
+    extern divisao
+    extern expo
+    extern mod
     global _start
 
 
@@ -154,8 +160,20 @@ menu_logic:
     mov eax, [esp+4]
 
 
+    ; 1: soma
+    cmp byte [eax], 31h
+    je op_soma
     ; 7 : exit
     cmp byte [eax], 37h
     je exit
 
     ret 2
+
+# TODO: funcs operations
+op_soma:
+    ; pede 2 numeros para o usuario
+    ; armazena em variáveis locais
+    ; chama a operação
+    
+# TODO: convert string to int
+str2int:
