@@ -169,11 +169,11 @@ menu_logic:
 
     ret 2
 
-# TODO: funcs operations
+; TODO: funcs operations
 op_soma:
     ; pede 2 numeros para o usuario
     ; armazena em variáveis locais
     ; chama a operação
     
-# TODO: convert string to int
+; TODO: convert string to int
 str2int:
