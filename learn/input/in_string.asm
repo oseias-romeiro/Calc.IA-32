@@ -1,5 +1,5 @@
 section .data
-    age db "your age: ", 0
+    age db "your name: ", 0
     age_size EQU $-age
 
 section .bss
@@ -10,18 +10,18 @@ section .text
 
 _start:
     ; call to input
-    push 32
-    push username
     push age_size
     push age
-    call input
-    add esp, 16
+    call print
 
-    ; call to print
     push 32
     push username
+    call input
+
+    ; call to print
+    push eax
+    push username
     call print
-    add esp, 8
 
     ; exit
     mov eax, 1
@@ -31,20 +31,24 @@ _start:
 input:
     ; Args: len, msg
 
-    mov eax, [esp + 4]
-    mov ebx, [esp + 8]
-    push ebx
-    push eax
-    call print
-    add esp, 8
-
     mov eax, 3
 	mov ebx, 0
-	mov ecx, [esp + 12]
-	mov edx, [esp + 16]
+	mov ecx, [esp + 4]
+	mov edx, [esp + 8]
 	int 80h
 
-    ret
+    mov eax, 0
+nl_remove:
+    cmp byte[ecx], 0ah
+    je return_input
+    cmp byte [ecx], 13
+	je	return_input
+	inc eax
+    inc ecx
+    jmp nl_remove
+
+return_input:
+    ret 4
 
 print:
     ; Args: len, msg
@@ -55,4 +59,4 @@ print:
     mov edx, [esp+8]
     int 80h
 
-    ret
+    ret 4
