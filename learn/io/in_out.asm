@@ -18,11 +18,6 @@ _start:
     push username
     call input
 
-    ; call to print
-    push eax
-    push username
-    call print
-
     ; exit
     mov eax, 1
     mov ebx, 0
@@ -37,17 +32,6 @@ input:
 	mov edx, [esp + 8]
 	int 80h
 
-    mov eax, 0
-nl_remove:
-    cmp byte[ecx], 0ah
-    je return_input
-    cmp byte [ecx], 13
-	je	return_input
-	inc eax
-    inc ecx
-    jmp nl_remove
-
-return_input:
     ret 4
 
 print:

@@ -35,6 +35,9 @@ section .bss
     username        resb 32
     precision       resb 2
     operation       resb 2
+    opera1          resb 16
+    opera2          resb 16
+    response        resb 32
 
 
 section .text
@@ -44,8 +47,7 @@ section .text
     extern divisao
     extern expo
     extern mod
-    global input
-    global print
+
     global _start
 
 
@@ -189,21 +191,62 @@ op_soma:
     ; chama a operação
     
     ; operador 1
-    push 4
-    push ebx
+    push 16
+    push opera1
     call input_num
     ; operador 2
-    push 4
-    push ecx
+    push 16
+    push opera2
     call input_num
 
+    ; TODO: conveter operadores para inteiro
+
     ; soma
-    push ebx
-    push ecx
+    push 4
+    push 4
     call soma
 
-    jmp exit
+    push eax
+    push 1 ;; TODO: encontrar o tamnho do numero
+    call itoa
+
+    push 32
+    push response
+    call print
+
+    push nl_size
+    push nl
+    call print
+
+    push 32
+    push response
+    call input
+
+    jmp menu
 
 
-str2int:
-    ; TODO: convert string to int
+str2num:
+    ; TODO: convert string to numeric
+
+    
+itoa:
+    
+	mov eax,[esp+8]		; EAX - Valor a ser impresso na tela
+	mov	ebx,response+31	; EBX - Digito menos significativo do numero
+	
+    ; TODO: negativo
+
+	mov	ecx,[esp+4]	; ECX - O tanto de algarismos que o numero contem
+	mov	edi,10
+
+itoa_loop:
+	mov	edx,0
+	div	edi
+	add	edx,48
+	mov	[ebx],dl
+	dec	ebx
+	dec ecx
+	jnz itoa_loop
+	
+	ret 4
+
