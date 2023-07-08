@@ -35,8 +35,8 @@ section .bss
     username        resb 32
     precision       resb 2
     operation       resb 2
-    opera1          resb 16
-    opera2          resb 16
+    opera1          resb 5
+    opera2          resb 5
     response        resb 32
 
 
@@ -70,6 +70,7 @@ _start:
     push msg3
     call print
 
+get_precision:
     ; obtem a precisão
     push msg4_size
     push msg4
@@ -77,6 +78,19 @@ _start:
     push 2
     push precision
     call input_num
+
+    ; define a precisão
+    cmp eax, 0
+    je precision16
+    cmp eax, 1
+    je precision32
+    jmp get_precision
+precision16:
+    mov word[precision], 16
+    jmp menu
+precision32:
+    mov word[precision], 32
+    jmp menu
 
 menu:
     ; args: operation var
@@ -109,7 +123,7 @@ menu:
     push operation
     call input_num
     
-    push operation
+    push eax
     call menu_logic
 
     ; enter para continuar
@@ -160,28 +174,35 @@ return_input:
     ret 4
 
 input_num:
-    ; args: len_var, var
+    ; args:
+    ; return: valor numerico
     mov eax, 3         ; read
 	mov ebx, 0         ; out
-	mov ecx, [esp + 4] ; msg
-	mov edx, [esp + 8] ; len
+	mov ecx, [esp+4]   ; msg
+	mov edx, 5         ; len
 	int 80h
+
+    ; converte para numero
+    mov ebx, [esp]
+    add esp, 4
+    call atoi
+    push ebx
 
     ret 4
 
 menu_logic:
     mov eax, [esp+4]
 
-    ; 1: soma
-    cmp byte [eax], 31h
+    ; soma
+    cmp eax, 1
     je op_soma
     ; 2
     ; 3
     ; 4
     ; 5
     ; 6
-    ; 7 : exit
-    cmp byte [eax], 37h
+    ; exit
+    cmp eax, 7
     je exit
 
     ret 2
@@ -194,28 +215,22 @@ op_soma:
     ; chama a operação
     
     ; operador 1
-    push 16
+    push 5
     push opera1
     call input_num
+    mov edi, eax
     ; operador 2
-    push 16
+    push 5
     push opera2
     call input_num
-
-    ; convete operadores para inteiro
-    push opera1
-    call atoi
-    mov ebx, eax
-    push opera2
-    call atoi
     
     ; soma
-    push ebx
+    push edi
     push eax
     call soma
 
     push eax
-    push 16 ; precisao
+    push precision
     call itoa
 
     push 32
@@ -230,6 +245,8 @@ op_soma:
 
 
 atoi:
+    ; # converte string para valor numero
+
     xor eax, eax ; eax armazena o resultado parcial
     mov edx, [esp+4]
 .top:
@@ -247,7 +264,7 @@ atoi:
     ret 2
     
 itoa:
-    
+    ; # converte valor numerico para string
 	mov eax,[esp+8]		; EAX - Valor a ser impresso na tela
 	mov	ebx,response+31	; EBX - Digito menos significativo do numero
 	
