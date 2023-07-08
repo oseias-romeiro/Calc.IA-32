@@ -112,6 +112,9 @@ menu:
     push operation
     call menu_logic
 
+    ; enter para continuar
+    call input_num
+
     jmp menu
 exit:
     push adios_size
@@ -199,15 +202,20 @@ op_soma:
     push opera2
     call input_num
 
-    ; TODO: conveter operadores para inteiro
-
+    ; convete operadores para inteiro
+    push opera1
+    call atoi
+    mov ebx, eax
+    push opera2
+    call atoi
+    
     ; soma
-    push 4
-    push 4
+    push ebx
+    push eax
     call soma
 
     push eax
-    push 1 ;; TODO: encontrar o tamnho do numero
+    push 16 ; precisao
     call itoa
 
     push 32
@@ -218,16 +226,25 @@ op_soma:
     push nl
     call print
 
-    push 32
-    push response
-    call input
-
     jmp menu
 
 
-str2num:
-    ; TODO: convert string to numeric
-
+atoi:
+    xor eax, eax ; eax armazena o resultado parcial
+    mov edx, [esp+4]
+.top:
+    movzx ecx, byte [edx] ; pega um character
+    inc edx ; incrementa para o proximo caractere
+    cmp ecx, '0' ; fim da string
+    jb .done
+    cmp ecx, '9'
+    ja .done
+    sub ecx, '0' ; converte para numero
+    imul eax, 10 ; multiplica o resultado por 10
+    add eax, ecx ; adiciona o digito
+    jmp .top
+.done:
+    ret 2
     
 itoa:
     
