@@ -1,4 +1,3 @@
-section .bss
 
 section .text
     global soma

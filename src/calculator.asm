@@ -78,19 +78,7 @@ get_precision:
     push 2
     push precision
     call input_num
-
-    ; define a precisão
-    cmp eax, 0
-    je precision16
-    cmp eax, 1
-    je precision32
-    jmp get_precision
-precision16:
-    mov word[precision], 16
-    jmp menu
-precision32:
-    mov word[precision], 32
-    jmp menu
+    mov [precision], eax
 
 menu:
     ; args: operation var
@@ -127,6 +115,8 @@ menu:
     call menu_logic
 
     ; enter para continuar
+    push 2
+    push operation
     call input_num
 
     jmp menu
@@ -191,6 +181,7 @@ input_num:
     ret 4
 
 menu_logic:
+    mov ebx, [esp]
     mov eax, [esp+4]
 
     ; soma
@@ -205,6 +196,8 @@ menu_logic:
     cmp eax, 7
     je exit
 
+menu_back:
+    push ebx
     ret 2
 
 ; TODO: funcs operations
@@ -230,7 +223,7 @@ op_soma:
     call soma
 
     push eax
-    push precision
+    push 32
     call itoa
 
     push 32
@@ -241,7 +234,7 @@ op_soma:
     push nl
     call print
 
-    jmp menu
+    jmp menu_back
 
 
 atoi:
