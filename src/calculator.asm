@@ -179,10 +179,10 @@ input_num:
     leave
     ret
 
-%define OP1 [ebp-8]
-%define OP2 [ebp-4]
-%assign P16 0
-%assign P32 1
+%define OP1 [ebp-8] ; operador 1
+%define OP2 [ebp-4] ; operador 2
+%assign P16 0       ; flag de precisao 16
+%assign P32 1       ; flag de precisao 32
 menu_logic:
     ; pede 2 numeros para o usuario
     ; armazena em variáveis locais
