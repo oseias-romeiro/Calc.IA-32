@@ -1,11 +1,19 @@
 
 section .text
-    global soma
+    global soma16
+    global soma32
+    
 
-soma:
+soma16:
+    mov ax, word[esp+4]
+    add ax, word[esp+6]
+    movzx eax, ax
+    
+    ret
+
+soma32:
 
     mov eax, [esp+4]
     add eax, [esp+8]
     
-    ret 4
-
+    ret

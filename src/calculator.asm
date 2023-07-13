@@ -34,7 +34,8 @@ section .bss
 
 
 section .text
-    extern soma
+    extern soma16
+    extern soma32
     extern subtracao
     extern mult
     extern divisao
@@ -174,13 +175,17 @@ input_num:
     leave
     ret
 
+%define OP1 [ebp-4]
+%define OP2 [ebp-8]
+%assign P16 0
+%assign P32 1
 menu_logic:
     enter 0,0
 
     mov eax, [ebp+8]
     ; soma
     cmp eax, 1
-    je op_soma
+    je .op_soma
     ; 2
     ; 3
     ; 4
@@ -190,39 +195,37 @@ menu_logic:
     cmp eax, 7
     je exit
 
-menu_back:
+.menu_back:
     leave
     ret
 
 ; TODO: funcs operations
 
-op_soma:
+.op_soma:
     ; pede 2 numeros para o usuario
     ; armazena em variáveis locais
     ; chama a operação
-    
+
     ; operador 1
     push 5
     push opera1
     call input_num
     add esp, 8
+    push eax
 
-    mov edi, eax
     ; operador 2
     push 5
     push opera2
     call input_num
     add esp, 8
-    
-    ; soma
-    push edi
     push eax
-    call soma
 
-    push eax
-    push 32
-    call itoa
+    cmp byte[precision], P16
+    je .op_soma_16
+    cmp byte[precision], P32
+    je .op_soma_32
 
+.back_op_soma:
     push 32
     push response
     call print
@@ -233,7 +236,38 @@ op_soma:
     call print
     add esp, 8
 
-    jmp menu_back
+    jmp .menu_back
+    
+.op_soma_32:
+    
+    ; soma
+    mov eax, OP1
+    mov ebx, OP2
+    push eax ; operador 1
+    push ebx ; operador 2
+    call soma32
+    add esp, 8
+
+    push eax
+    push 32
+    call itoa
+
+    jmp .back_op_soma
+
+.op_soma_16:
+    ; soma
+    mov ax, word OP1
+    mov bx, word OP2
+    push ax ; operador 1
+    push bx ; operador 2
+    call soma16
+    add esp, 4
+
+    push eax
+    push 16
+    call itoa
+
+    jmp .back_op_soma
 
 
 atoi:
@@ -265,14 +299,14 @@ itoa:
 	mov	ecx,[esp+4]	; ECX - O tanto de algarismos que o numero contem
 	mov	edi,10
 
-itoa_loop:
+.itoa_loop:
 	mov	edx,0
 	div	edi
 	add	edx,48
 	mov	[ebx],dl
 	dec	ebx
 	dec ecx
-	jnz itoa_loop
+	jnz .itoa_loop
 	
 	ret 4
 
