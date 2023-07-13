@@ -36,6 +36,8 @@ section .bss
 section .text
     extern soma16
     extern soma32
+    extern sub16
+    extern sub32
     extern subtracao
     extern mult
     extern divisao
@@ -84,7 +86,7 @@ _start:
     call input_num
     add esp, 8
 
-    mov [precision], word eax
+    mov [precision], eax
 
 .menu:
     ; args: operation var
@@ -160,6 +162,7 @@ input_num:
     ; args:
     ; return: valor numerico
     enter 0,0
+    push ebx
 
     mov eax, 3         ; read
 	mov ebx, 0         ; out
@@ -172,39 +175,25 @@ input_num:
     call atoi
     add esp, 4
 
+    pop ebx
     leave
     ret
 
-%define OP1 [ebp-4]
-%define OP2 [ebp-8]
+%define OP1 [ebp-8]
+%define OP2 [ebp-4]
 %assign P16 0
 %assign P32 1
 menu_logic:
-    enter 0,0
-
-    mov eax, [ebp+8]
-    ; soma
-    cmp eax, 1
-    je .op_soma
-    ; 2
-    ; 3
-    ; 4
-    ; 5
-    ; 6
-    ; exit
-    cmp eax, 7
-    je exit
-
-.menu_back:
-    leave
-    ret
-
-; TODO: funcs operations
-
-.op_soma:
     ; pede 2 numeros para o usuario
     ; armazena em variáveis locais
     ; chama a operação
+
+    enter 0,0
+    mov ebx, [ebp+8]
+
+    ; 7 - exit
+    cmp ebx, 7
+    je exit
 
     ; operador 1
     push 5
@@ -220,12 +209,30 @@ menu_logic:
     add esp, 8
     push eax
 
+    ; 1- soma
+    cmp ebx, 1
+    je .op_soma
+    ; 2- subtração
+    cmp ebx, 2
+    je .op_sub
+    ; 3
+    ; 4
+    ; 5
+    ; 6
+
+.menu_back:
+    leave
+    ret
+
+; TODO: funcs operations
+
+.op_soma:
     cmp byte[precision], P16
     je .op_soma_16
     cmp byte[precision], P32
     je .op_soma_32
 
-.back_op_soma:
+.back_op:
     push 32
     push response
     call print
@@ -238,22 +245,6 @@ menu_logic:
 
     jmp .menu_back
     
-.op_soma_32:
-    
-    ; soma
-    mov eax, OP1
-    mov ebx, OP2
-    push eax ; operador 1
-    push ebx ; operador 2
-    call soma32
-    add esp, 8
-
-    push eax
-    push 32
-    call itoa
-
-    jmp .back_op_soma
-
 .op_soma_16:
     ; soma
     mov ax, word OP1
@@ -267,8 +258,58 @@ menu_logic:
     push 16
     call itoa
 
-    jmp .back_op_soma
+    jmp .back_op
 
+.op_soma_32:
+    ; soma
+    mov eax, OP1
+    mov ebx, OP2
+    push eax ; operador 1
+    push ebx ; operador 2
+    call soma32
+    add esp, 8
+
+    push eax
+    push 32
+    call itoa
+
+    jmp .back_op
+
+.op_sub:
+    cmp byte[precision], P16
+    je .op_sub_16
+    cmp byte[precision], P32
+    je .op_sub_32
+
+.op_sub_16:
+    ; soma
+    mov ax, word OP1
+    mov bx, word OP2
+    push ax ; operador 1
+    push bx ; operador 2
+    call sub16
+    add esp, 4
+
+    push eax
+    push 16
+    call itoa
+
+    jmp .back_op
+
+.op_sub_32:
+    ; soma
+    mov eax, OP1
+    mov ebx, OP2
+    push eax ; operador 1
+    push ebx ; operador 2
+    call sub32
+    add esp, 8
+
+    push eax
+    push 32
+    call itoa
+
+    jmp .back_op
 
 atoi:
     ; # converte string para valor numero
