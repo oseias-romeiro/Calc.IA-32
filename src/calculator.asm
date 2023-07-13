@@ -1,7 +1,7 @@
 section .data
     nl          db  "", 0Dh, 0Ah
     nl_size     EQU $-nl
-    ; user massages
+    ; interacao com usuario
     msg1        db  "Bem-vindo. Digite seu nome: ", 0
     msg1_size   EQU $-msg1
     msg2        db  "Hola, ", 0
@@ -10,23 +10,16 @@ section .data
     msg3_size   EQU $-msg3
     msg4        db  "Vai trabalhar com 16 ou 32 bits (digite 0 para 16, e 1 para 32): ", 0
     msg4_size   EQU $-msg4
-    ; items menu
-    menu_hd     db  "ESCOLHA UMA OPÇÃO:", 0Dh, 0Ah
-    hd_size     EQU $-menu_hd
-    menu_item1  db  "- 1: SOMA", 0Dh, 0Ah
-    item1_size  EQU $-menu_item1
-    menu_item2  db  "- 2: SUBTRACAO", 0Dh, 0Ah
-    item2_size  EQU $-menu_item2
-    menu_item3  db  "- 3: MULTIPLICACAO", 0Dh, 0Ah
-    item3_size  EQU $-menu_item3
-    menu_item4  db  "- 4: DIVISAO", 0Dh, 0Ah
-    item4_size  EQU $-menu_item4
-    menu_item5  db  "- 5: EXPONENCIACAO", 0Dh, 0Ah
-    item5_size  EQU $-menu_item5
-    menu_item6  db  "- 6: MOD", 0Dh, 0Ah
-    item6_size  EQU $-menu_item6
-    menu_item7  db  "- 7: SAIR", 0Dh, 0Ah
-    item7_size  EQU $-menu_item7
+    ; menu
+    menu_msg        db "ESCOLHA UMA OPÇÃO:", 0Dh, 0Ah
+                    db "- 1: SOMA", 0Dh, 0Ah
+                    db "- 2: SUBTRACAO", 0Dh, 0Ah
+                    db "- 3: MULTIPLICACAO", 0Dh, 0Ah
+                    db  "- 4: DIVISAO", 0Dh, 0Ah
+                    db  "- 5: EXPONENCIACAO", 0Dh, 0Ah
+                    db  "- 6: MOD", 0Dh, 0Ah
+                    db  "- 7: SAIR", 0Dh, 0Ah
+    menu_msg_size   EQU $-menu_msg
     ;adiós
     adios       db  "Adiós...", 0Dh, 0Ah
     adios_size  EQU $-adios
@@ -56,74 +49,73 @@ _start:
     push msg1_size
     push msg1
     call print
+    add esp, 8
+
     push 32
     push username
     call input
+    add esp, 8
+
     ; printa a menssagem de bemvindo com o nome
     push msg2_size
     push msg2
     call print
+    add esp, 8
+
     push eax ; retorno do input
     push username
     call print
+    add esp, 8
+
     push msg3_size
     push msg3
     call print
+    add esp, 8
 
-get_precision:
     ; obtem a precisão
     push msg4_size
     push msg4
     call print
+    add esp, 8
+
     push 2
     push precision
     call input_num
-    mov [precision], eax
+    add esp, 8
 
-menu:
+    mov [precision], word eax
+
+.menu:
     ; args: operation var
-    push hd_size
-    push menu_hd
+
+    ; print menu
+    push menu_msg_size
+    push menu_msg
     call print
-    push item1_size
-    push menu_item1
-    call print
-    push item2_size
-    push menu_item2
-    call print
-    push item3_size
-    push menu_item3
-    call print
-    push item4_size
-    push menu_item4
-    call print
-    push item5_size
-    push menu_item5
-    call print
-    push item6_size
-    push menu_item6
-    call print
-    push item7_size
-    push menu_item7
-    call print
+    add esp, 8
 
     push 2
     push operation
     call input_num
+    add esp, 8
     
     push eax
     call menu_logic
+    add esp, 4
 
     ; enter para continuar
     push 2
     push operation
     call input_num
+    add esp, 8
 
-    jmp menu
+    jmp .menu
+
 exit:
     push adios_size
     push adios
     call print
+    add esp, 8
 
     mov eax, 1
     add ebx, 0
@@ -140,7 +132,7 @@ print:
     int 80h
 
     pop eax
-    ret 4
+    ret
 
 input:
     ; args: len_var, var
@@ -153,37 +145,39 @@ input:
 
     ; retone a poisção do enter
     mov eax, 0
-nl_search:
+.nl_search:
     cmp byte[ecx], 0ah ; enter code
-    je return_input
+    je .return_input
 	inc eax
     inc ecx
-    jmp nl_search
+    jmp .nl_search
 
-return_input:
-    ret 4
+.return_input:
+    ret
 
 input_num:
     ; args:
     ; return: valor numerico
+    enter 0,0
+
     mov eax, 3         ; read
 	mov ebx, 0         ; out
-	mov ecx, [esp+4]   ; msg
+	mov ecx, [ebp+8]   ; msg
 	mov edx, 5         ; len
 	int 80h
 
     ; converte para numero
-    mov ebx, [esp]
-    add esp, 4
+    push ecx
     call atoi
-    push ebx
+    add esp, 4
 
-    ret 4
+    leave
+    ret
 
 menu_logic:
-    mov ebx, [esp]
-    mov eax, [esp+4]
+    enter 0,0
 
+    mov eax, [ebp+8]
     ; soma
     cmp eax, 1
     je op_soma
@@ -197,8 +191,8 @@ menu_logic:
     je exit
 
 menu_back:
-    push ebx
-    ret 2
+    leave
+    ret
 
 ; TODO: funcs operations
 
@@ -211,11 +205,14 @@ op_soma:
     push 5
     push opera1
     call input_num
+    add esp, 8
+
     mov edi, eax
     ; operador 2
     push 5
     push opera2
     call input_num
+    add esp, 8
     
     ; soma
     push edi
@@ -229,10 +226,12 @@ op_soma:
     push 32
     push response
     call print
+    add esp, 8
 
     push nl_size
     push nl
     call print
+    add esp, 8
 
     jmp menu_back
 
@@ -254,7 +253,7 @@ atoi:
     add eax, ecx ; adiciona o digito
     jmp .top
 .done:
-    ret 2
+    ret
     
 itoa:
     ; # converte valor numerico para string
