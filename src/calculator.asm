@@ -1,15 +1,15 @@
 section .data
-    nl          db  "", 0Dh, 0Ah
-    nl_size     EQU $-nl
+    nl              db  "", 0Dh, 0Ah
+    nl_size         EQU $-nl
     ; interacao com usuario
-    msg1        db  "Bem-vindo. Digite seu nome: ", 0
-    msg1_size   EQU $-msg1
-    msg2        db  "Hola, ", 0
-    msg2_size   EQU $-msg2
-    msg3        db  ", bem-vindo ao programa de CALC IA-32", 0Dh, 0Ah
-    msg3_size   EQU $-msg3
-    msg4        db  "Vai trabalhar com 16 ou 32 bits (digite 0 para 16, e 1 para 32): ", 0
-    msg4_size   EQU $-msg4
+    msg1            db  "Bem-vindo. Digite seu nome: ", 0
+    msg1_size       EQU $-msg1
+    msg2            db  "Hola, ", 0
+    msg2_size       EQU $-msg2
+    msg3            db  ", bem-vindo ao programa de CALC IA-32", 0Dh, 0Ah
+    msg3_size       EQU $-msg3
+    msg4            db  "Vai trabalhar com 16 ou 32 bits (digite 0 para 16, e 1 para 32): ", 0
+    msg4_size       EQU $-msg4
     ; menu
     menu_msg        db "ESCOLHA UMA OPÇÃO:", 0Dh, 0Ah
                     db "- 1: SOMA", 0Dh, 0Ah
@@ -20,9 +20,12 @@ section .data
                     db  "- 6: MOD", 0Dh, 0Ah
                     db  "- 7: SAIR", 0Dh, 0Ah
     menu_msg_size   EQU $-menu_msg
+    ; overflow
+    msg_OF          db "OCORREU OVERFLOW!", 0Dh, 0Ah
+    len_OF          EQU $-msg_OF
     ;adiós
-    adios       db  "Adiós...", 0Dh, 0Ah
-    adios_size  EQU $-adios
+    adios           db  "Adiós...", 0Dh, 0Ah
+    adios_size      EQU $-adios
 
 section .bss
     username        resb 32
@@ -38,8 +41,9 @@ section .text
     extern soma32
     extern sub16
     extern sub32
+    extern mul16
+    extern mul32
     extern subtracao
-    extern mult
     extern divisao
     extern expo
     extern mod
@@ -172,7 +176,7 @@ input_num:
 
     ; converte para numero
     push ecx
-    call atoi
+    call tonum
     add esp, 4
 
     pop ebx
@@ -215,7 +219,9 @@ menu_logic:
     ; 2- subtração
     cmp ebx, 2
     je .op_sub
-    ; 3
+    ; 3- multiplicação
+    cmp ebx, 3
+    je .op_mul
     ; 4
     ; 5
     ; 6
@@ -224,7 +230,6 @@ menu_logic:
     leave
     ret
 
-; TODO: funcs operations
 
 .op_soma:
     cmp byte[precision], P16
@@ -246,7 +251,6 @@ menu_logic:
     jmp .menu_back
     
 .op_soma_16:
-    ; soma
     mov ax, word OP1
     mov bx, word OP2
     push ax ; operador 1
@@ -256,12 +260,11 @@ menu_logic:
 
     push eax
     push 16
-    call itoa
+    call tostr
 
     jmp .back_op
 
 .op_soma_32:
-    ; soma
     mov eax, OP1
     mov ebx, OP2
     push eax ; operador 1
@@ -271,7 +274,7 @@ menu_logic:
 
     push eax
     push 32
-    call itoa
+    call tostr
 
     jmp .back_op
 
@@ -282,7 +285,6 @@ menu_logic:
     je .op_sub_32
 
 .op_sub_16:
-    ; soma
     mov ax, word OP1
     mov bx, word OP2
     push ax ; operador 1
@@ -292,12 +294,11 @@ menu_logic:
 
     push eax
     push 16
-    call itoa
+    call tostr
 
     jmp .back_op
 
 .op_sub_32:
-    ; soma
     mov eax, OP1
     mov ebx, OP2
     push eax ; operador 1
@@ -307,11 +308,58 @@ menu_logic:
 
     push eax
     push 32
-    call itoa
+    call tostr
 
     jmp .back_op
 
-atoi:
+.op_mul:
+    cmp byte[precision], P16
+    je .op_mul_16
+    cmp byte[precision], P32
+    je .op_mul_32
+
+.op_mul_16:
+    mov ax, word OP1
+    mov bx, word OP2
+    push ax ; operador 1
+    push bx ; operador 2
+    call mul16
+    call check_overflow
+
+    add esp, 4
+
+    push eax
+    push 16
+    call tostr
+
+    jmp .back_op
+
+.op_mul_32:
+    mov eax, OP1
+    mov ebx, OP2
+    push eax ; operador 1
+    push ebx ; operador 2
+    call mul32
+    add esp, 8
+    
+    push eax
+    push 32
+    call tostr
+
+    jmp .back_op
+
+
+check_overflow:
+    jo .OF_ocurred
+    ret
+.OF_ocurred:
+    push len_OF
+    push msg_OF
+    call print
+    add esp, 8
+    ret
+
+tonum:
     ; # converte string para valor numero
 
     xor eax, eax ; eax armazena o resultado parcial
@@ -330,7 +378,7 @@ atoi:
 .done:
     ret
     
-itoa:
+tostr:
     ; # converte valor numerico para string
 	mov eax,[esp+8]		; EAX - Valor a ser impresso na tela
 	mov	ebx,response+31	; EBX - Digito menos significativo do numero
@@ -340,14 +388,14 @@ itoa:
 	mov	ecx,[esp+4]	; ECX - O tanto de algarismos que o numero contem
 	mov	edi,10
 
-.itoa_loop:
+.tostr_loop:
 	mov	edx,0
 	div	edi
 	add	edx,48
 	mov	[ebx],dl
 	dec	ebx
 	dec ecx
-	jnz .itoa_loop
+	jnz .tostr_loop
 	
 	ret 4
 
