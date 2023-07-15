@@ -395,7 +395,7 @@ check_overflow:
     push msg_OF
     call print
     add esp, 8
-    ret
+    jmp exit
 
 tonum:
     ; # converte string para valor numero
