@@ -43,8 +43,8 @@ section .text
     extern sub32
     extern mul16
     extern mul32
-    extern subtracao
-    extern divisao
+    extern div16
+    extern div32
     extern expo
     extern mod
 
@@ -222,7 +222,9 @@ menu_logic:
     ; 3- multiplicação
     cmp ebx, 3
     je .op_mul
-    ; 4
+    ; 4- divisão
+    cmp ebx, 4
+    je .op_div
     ; 5
     ; 6
 
@@ -340,6 +342,42 @@ menu_logic:
     push eax ; operador 1
     push ebx ; operador 2
     call mul32
+    add esp, 8
+    
+    push eax
+    push 32
+    call tostr
+
+    jmp .back_op
+
+
+.op_div:
+    cmp byte[precision], P16
+    je .op_div_16
+    cmp byte[precision], P32
+    je .op_div_32
+
+.op_div_16:
+    mov ax, word OP1
+    mov bx, word OP2
+    push ax ; operador 1
+    push bx ; operador 2
+    call div16
+
+    add esp, 4
+
+    push eax
+    push 16
+    call tostr
+
+    jmp .back_op
+
+.op_div_32:
+    mov eax, OP1
+    mov ebx, OP2
+    push eax ; operador 1
+    push ebx ; operador 2
+    call div32
     add esp, 8
     
     push eax
