@@ -45,7 +45,8 @@ section .text
     extern mul32
     extern div16
     extern div32
-    extern expo
+    extern expo16
+    extern expo32
     extern mod
 
     global _start
@@ -225,7 +226,9 @@ menu_logic:
     ; 4- divisão
     cmp ebx, 4
     je .op_div
-    ; 5
+    ; 5- exponenciação
+    cmp ebx, 5
+    je .op_expo
     ; 6
 
 .menu_back:
@@ -363,7 +366,6 @@ menu_logic:
     push ax ; operador 1
     push bx ; operador 2
     call div16
-
     add esp, 4
 
     push eax
@@ -378,6 +380,41 @@ menu_logic:
     push eax ; operador 1
     push ebx ; operador 2
     call div32
+    add esp, 8
+    
+    push eax
+    push 32
+    call tostr
+
+    jmp .back_op
+
+
+.op_expo:
+    cmp byte[precision], P16
+    je .op_expo16
+    cmp byte[precision], P32
+    je .op_expo32
+
+.op_expo16:
+    mov ax, word OP1
+    mov bx, word OP2
+    push ax ; operador 1
+    push bx ; operador 2
+    call expo16
+    add esp, 4
+
+    push eax
+    push 16
+    call tostr
+
+    jmp .back_op
+
+.op_expo32:
+    mov eax, OP1
+    mov ebx, OP2
+    push eax ; operador 1
+    push ebx ; operador 2
+    call expo32
     add esp, 8
     
     push eax
