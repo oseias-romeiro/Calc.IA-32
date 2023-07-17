@@ -47,7 +47,8 @@ section .text
     extern div32
     extern expo16
     extern expo32
-    extern mod
+    extern mod16
+    extern mod32
 
     global _start
 
@@ -184,8 +185,8 @@ input_num:
     leave
     ret
 
-%define OP1 [ebp-8] ; operador 1
-%define OP2 [ebp-4] ; operador 2
+%define OP1 [ebp-8] ; operando 1
+%define OP2 [ebp-4] ; operando 2
 %assign P16 0       ; flag de precisao 16
 %assign P32 1       ; flag de precisao 32
 menu_logic:
@@ -200,14 +201,14 @@ menu_logic:
     cmp ebx, 7
     je exit
 
-    ; operador 1
+    ; operando 1
     push 5
     push opera1
     call input_num
     add esp, 8
     push eax
 
-    ; operador 2
+    ; operando 2
     push 5
     push opera2
     call input_num
@@ -229,7 +230,9 @@ menu_logic:
     ; 5- exponenciação
     cmp ebx, 5
     je .op_expo
-    ; 6
+    ; 6- módulo
+    cmp ebx, 6
+    je .op_mod
 
 .menu_back:
     leave
@@ -258,8 +261,8 @@ menu_logic:
 .op_soma_16:
     mov ax, word OP1
     mov bx, word OP2
-    push ax ; operador 1
-    push bx ; operador 2
+    push ax ; operando 1
+    push bx ; operando 2
     call soma16
     add esp, 4
 
@@ -272,8 +275,8 @@ menu_logic:
 .op_soma_32:
     mov eax, OP1
     mov ebx, OP2
-    push eax ; operador 1
-    push ebx ; operador 2
+    push eax ; operando 1
+    push ebx ; operando 2
     call soma32
     add esp, 8
 
@@ -292,8 +295,8 @@ menu_logic:
 .op_sub_16:
     mov ax, word OP1
     mov bx, word OP2
-    push ax ; operador 1
-    push bx ; operador 2
+    push ax ; operando 1
+    push bx ; operando 2
     call sub16
     add esp, 4
 
@@ -306,8 +309,8 @@ menu_logic:
 .op_sub_32:
     mov eax, OP1
     mov ebx, OP2
-    push eax ; operador 1
-    push ebx ; operador 2
+    push eax ; operando 1
+    push ebx ; operando 2
     call sub32
     add esp, 8
 
@@ -326,8 +329,8 @@ menu_logic:
 .op_mul_16:
     mov ax, word OP1
     mov bx, word OP2
-    push ax ; operador 1
-    push bx ; operador 2
+    push ax ; operando 1
+    push bx ; operando 2
     call mul16
     call check_overflow
 
@@ -342,8 +345,8 @@ menu_logic:
 .op_mul_32:
     mov eax, OP1
     mov ebx, OP2
-    push eax ; operador 1
-    push ebx ; operador 2
+    push eax ; operando 1
+    push ebx ; operando 2
     call mul32
     add esp, 8
     
@@ -363,8 +366,8 @@ menu_logic:
 .op_div_16:
     mov ax, word OP1
     mov bx, word OP2
-    push ax ; operador 1
-    push bx ; operador 2
+    push ax ; operando 1
+    push bx ; operando 2
     call div16
     add esp, 4
 
@@ -377,8 +380,8 @@ menu_logic:
 .op_div_32:
     mov eax, OP1
     mov ebx, OP2
-    push eax ; operador 1
-    push ebx ; operador 2
+    push eax ; operando 1
+    push ebx ; operando 2
     call div32
     add esp, 8
     
@@ -398,8 +401,8 @@ menu_logic:
 .op_expo16:
     mov ax, word OP1
     mov bx, word OP2
-    push ax ; operador 1
-    push bx ; operador 2
+    push ax ; operando 1
+    push bx ; operando 2
     call expo16
     add esp, 4
 
@@ -412,9 +415,44 @@ menu_logic:
 .op_expo32:
     mov eax, OP1
     mov ebx, OP2
-    push eax ; operador 1
-    push ebx ; operador 2
+    push eax ; operando 1
+    push ebx ; operando 2
     call expo32
+    add esp, 8
+    
+    push eax
+    push 32
+    call tostr
+
+    jmp .back_op
+
+
+.op_mod:
+    cmp byte[precision], P16
+    je .op_mod16
+    cmp byte[precision], P32
+    je .op_mod32
+
+.op_mod16:
+    mov ax, word OP1
+    mov bx, word OP2
+    push ax ; operando 1
+    push bx ; operando 2
+    call mod16
+    add esp, 4
+
+    push eax
+    push 16
+    call tostr
+
+    jmp .back_op
+
+.op_mod32:
+    mov eax, OP1
+    mov ebx, OP2
+    push eax ; operando 1
+    push ebx ; operando 2
+    call mod32
     add esp, 8
     
     push eax
