@@ -7,7 +7,7 @@ sub16:
 
     mov ax, word[esp+4]
     sub ax, word[esp+8]
-    movzx eax, ax
+    movsx eax, ax
     
     ret
 

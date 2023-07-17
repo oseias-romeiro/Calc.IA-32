@@ -28,12 +28,12 @@ section .data
     adios_size      EQU $-adios
 
 section .bss
-    username        resb 32
+    username        resb 30
     precision       resb 2
     operation       resb 2
-    opera1          resb 5
-    opera2          resb 5
-    response        resb 32
+    opera1          resb 11
+    opera2          resb 11
+    response        resb 11
 
 
 section .text
@@ -247,16 +247,22 @@ menu_logic:
     je .op_soma_32
 
 .back_op:
+    ; converte a resposta para texto
+    push eax
+    push 11
+    call tostr
+    
+    ; printa o resultado
     push 32
     push response
     call print
     add esp, 8
-
     push nl_size
     push nl
     call print
     add esp, 8
 
+    ; volta para o menu
     jmp .menu_back
     
 .op_soma_16:
@@ -267,9 +273,6 @@ menu_logic:
     call soma16
     add esp, 4
 
-    push eax
-    push 16
-    call tostr
 
     jmp .back_op
 
@@ -281,9 +284,6 @@ menu_logic:
     call soma32
     add esp, 8
 
-    push eax
-    push 32
-    call tostr
 
     jmp .back_op
 
@@ -301,9 +301,6 @@ menu_logic:
     call sub16
     add esp, 4
 
-    push eax
-    push 16
-    call tostr
 
     jmp .back_op
 
@@ -316,7 +313,7 @@ menu_logic:
     add esp, 8
 
     push eax
-    push 32
+    push 31
     call tostr
 
     jmp .back_op
@@ -335,9 +332,6 @@ menu_logic:
     call mul16
     add esp, 4
 
-    push eax
-    push 16
-    call tostr
 
     jmp .back_op
 
@@ -349,9 +343,6 @@ menu_logic:
     call mul32
     add esp, 8
     
-    push eax
-    push 32
-    call tostr
 
     jmp .back_op
 
@@ -370,9 +361,6 @@ menu_logic:
     call div16
     add esp, 4
 
-    push eax
-    push 16
-    call tostr
 
     jmp .back_op
 
@@ -384,9 +372,6 @@ menu_logic:
     call div32
     add esp, 8
     
-    push eax
-    push 32
-    call tostr
 
     jmp .back_op
 
@@ -405,9 +390,6 @@ menu_logic:
     call expo16
     add esp, 4
 
-    push eax
-    push 16
-    call tostr
 
     jmp .back_op
 
@@ -419,9 +401,6 @@ menu_logic:
     call expo32
     add esp, 8
     
-    push eax
-    push 32
-    call tostr
 
     jmp .back_op
 
@@ -440,9 +419,6 @@ menu_logic:
     call mod16
     add esp, 4
 
-    push eax
-    push 16
-    call tostr
 
     jmp .back_op
 
@@ -454,9 +430,6 @@ menu_logic:
     call mod32
     add esp, 8
     
-    push eax
-    push 32
-    call tostr
 
     jmp .back_op
 
@@ -472,10 +445,19 @@ check_overflow:
     jmp exit
 
 tonum:
-    ; # converte string para valor numero
+    ; converte string para valor numerico
 
     xor eax, eax ; eax armazena o resultado parcial
     mov edx, [esp+4]
+
+    movzx ecx, byte[edx] ; pega o primeiro caractere
+    cmp ecx, '-' ; verifica se é negativo
+    jne .top ; se não, pula direto para a conversão
+
+    ; Se for negativo
+    mov ebx, 1 ; flag de negativo
+    inc edx ; incrementa para o próximo caractere
+
 .top:
     movzx ecx, byte [edx] ; pega um character
     inc edx ; incrementa para o proximo caractere
@@ -488,17 +470,28 @@ tonum:
     add eax, ecx ; adiciona o digito
     jmp .top
 .done:
+    cmp ebx, 1
+    je .neg_tonum
+    ret
+.neg_tonum:
+    neg eax
     ret
     
 tostr:
     ; # converte valor numerico para string
 	mov eax,[esp+8]		; EAX - Valor a ser impresso na tela
-	mov	ebx,response+31	; EBX - Digito menos significativo do numero
-	
-    ; TODO: negativo
-
+	mov	ebx,response+10	; EBX - Digito menos significativo do numero
 	mov	ecx,[esp+4]	; ECX - O tanto de algarismos que o numero contem
 	mov	edi,10
+
+    ; negativo
+    cmp eax, 0
+    jge .tostr_loop ; positivo
+
+	mov byte [response], '-' ; Coloca o sinal negativo no início da string
+	neg eax ; Transforma o número em negativo (complemento de dois)
+	inc edx ; Ajusta o índice do início do buffer
+	dec ecx ; Decrementa o contador de caracteres
 
 .tostr_loop:
 	mov	edx,0
@@ -510,4 +503,3 @@ tostr:
 	jnz .tostr_loop
 	
 	ret 4
-

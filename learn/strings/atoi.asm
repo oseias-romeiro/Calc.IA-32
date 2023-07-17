@@ -1,8 +1,10 @@
 section .data
-    num  db "10", 0Ah
+    num     db "-9"
+    neg_val db "negativo!", 0Ah, 0Dh
+    neg_len EQU $-neg_val
 
 section .bss
-    response resb 32
+    response resb 11
 
 section .text
     global _start
@@ -12,7 +14,7 @@ _start:
     call atoi
 
     push eax
-    push 2
+    push 11
     call itoa
 
     push 32
@@ -23,9 +25,21 @@ _start:
     mov ebx, 0
     int 80h
 
+
 atoi:
-    mov edx, [esp+4]
+    ; # converte string para valor numerico
+
     xor eax, eax ; eax armazena o resultado parcial
+    mov edx, [esp+4]
+
+    movzx ecx, byte [edx] ; pega o primeiro caractere
+    cmp ecx, '-' ; verifica se é negativo
+    jne .top ; se não, pula direto para a conversão
+
+    ; Se for negativo
+    mov ebx, 1 ; flag de aviso 
+    inc edx ; incrementa para o próximo caractere
+
 .top:
     movzx ecx, byte [edx] ; pega um character
     inc edx ; incrementa para o proximo caractere
@@ -38,7 +52,13 @@ atoi:
     add eax, ecx ; adiciona o digito
     jmp .top
 .done:
+    cmp ebx, 1 ; se for negativo
+    je .atoi_neg ; nega o valor
+.back_atoi:
     ret 2
+.atoi_neg:
+    neg eax
+    jmp .back_atoi
 
 print:
     ; Args: len, msg
@@ -54,20 +74,27 @@ print:
 itoa:
     
 	mov eax,[esp+8]		; EAX - Valor a ser impresso na tela
-	mov	ebx,response+31	; EBX - Digito menos significativo do numero
-	
-    ; TODO: negativo
-
-	mov	ecx,[esp+4]	; ECX - O tanto de algarismos que o numero contem
+	mov	ebx,response+10	; EBX - Digito menos significativo do numero
+    mov	ecx,[esp+4]	; ECX - O tanto de algarismos que o numero contem
 	mov	edi,10
 
-itoa_loop:
+    ; negativo
+    cmp eax, 0
+    jge .itoa_loop
+
+	mov byte [response], '-' ; Coloca o sinal negativo no início da string
+	neg eax ; Transforma o número em negativo (complemento de dois)
+	inc edx ; Ajusta o índice do início do buffer
+	dec ecx ; Decrementa o contador de caracteres
+
+
+.itoa_loop:
 	mov	edx,0
 	div	edi
 	add	edx,48
 	mov	[ebx],dl
 	dec	ebx
 	dec ecx
-	jnz itoa_loop
-	
-	ret 4
+	jnz .itoa_loop
+
+    ret 4

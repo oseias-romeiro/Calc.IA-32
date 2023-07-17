@@ -7,7 +7,7 @@ section .text
 soma16:
     mov ax, word[esp+4]
     add ax, word[esp+6]
-    movzx eax, ax
+    movsx eax, ax
     
     ret
 

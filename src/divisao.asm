@@ -8,7 +8,7 @@ div16:
     cdq
     mov bx, [esp+6]
     idiv bx
-    movzx eax, ax
+    movsx eax, ax
 
     ret
 

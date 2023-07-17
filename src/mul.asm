@@ -9,7 +9,7 @@ mul16:
     mov bx, [esp+6]
     imul ax, bx
     call check_overflow
-    movzx eax, ax
+    movsx eax, ax
 
     ret
 

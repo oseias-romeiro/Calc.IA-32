@@ -9,7 +9,7 @@ mod16:
 
     xor dx, dx
     idiv bx
-    movzx eax, dx
+    movsx eax, dx
 
     ret
 

@@ -21,7 +21,7 @@ expo16:
         jmp expo16_loop   ; Volta para o início do laço
 
     expo16_end:
-    movzx eax, ax
+    movsx eax, ax
     ret
 
 expo32:
