@@ -1,4 +1,6 @@
 section .text
+    extern check_overflow
+
     global expo16
     global expo32
 
@@ -14,6 +16,7 @@ expo16:
         jle expo16_end    ; Se for zero, sai do laço
 
         imul ax, cx     ; Multiplica o resultado atual pela base
+        call check_overflow
         dec bx          ; Decrementa o expoente
         jmp expo16_loop   ; Volta para o início do laço
 
@@ -33,6 +36,7 @@ expo32:
         jle expo32_end       ; Se for zero, sai do laço
 
         imul eax, ecx     ; Multiplica o resultado atual pela base
+        call check_overflow
         dec ebx           ; Decrementa o expoente
         jmp expo32_loop     ; Volta para o início do laço
 

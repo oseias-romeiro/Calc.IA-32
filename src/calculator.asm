@@ -51,6 +51,7 @@ section .text
     extern mod32
 
     global _start
+    global check_overflow
 
 
 _start:
@@ -332,8 +333,6 @@ menu_logic:
     push ax ; operando 1
     push bx ; operando 2
     call mul16
-    call check_overflow
-
     add esp, 4
 
     push eax
