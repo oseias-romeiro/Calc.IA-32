@@ -166,15 +166,14 @@ input:
     ret
 
 input_num:
-    ; args:
-    ; return: valor numerico
+    ; Ler uma entrada de dados e converte para valor numérico
     enter 0,0
     push ebx
 
     mov eax, 3         ; read
-	mov ebx, 0         ; out
+	mov ebx, 0         ; std_out
 	mov ecx, [ebp+8]   ; msg
-	mov edx, 5         ; len
+	mov edx, 11        ; len
 	int 80h
 
     ; converte para numero
@@ -193,7 +192,7 @@ input_num:
 menu_logic:
     ; pede 2 numeros para o usuario
     ; armazena em variáveis locais
-    ; chama a operação
+    ; salta para o controle da operação, que guia para a função de 16 bits ou para a função de 32
 
     enter 0,0
     mov ebx, [ebp+8]
@@ -202,20 +201,24 @@ menu_logic:
     cmp ebx, 7
     je exit
 
+    ; leitura dos operandos
+    ; sempre são lido dois operandos (exceto na escolha de saída do programa - 7)
+
     ; operando 1
-    push 5
+    push 11
     push opera1
     call input_num
     add esp, 8
     push eax
 
     ; operando 2
-    push 5
+    push 11
     push opera2
     call input_num
     add esp, 8
     push eax
 
+    ; escolha da operação
     ; 1- soma
     cmp ebx, 1
     je .op_soma
@@ -234,11 +237,10 @@ menu_logic:
     ; 6- módulo
     cmp ebx, 6
     je .op_mod
-
+    ; caso não seja uma opção válida, faz o retorno
 .menu_back:
     leave
     ret
-
 
 .op_soma:
     cmp byte[precision], P16
@@ -253,7 +255,7 @@ menu_logic:
     call tostr
     
     ; printa o resultado
-    push 32
+    push 11
     push response
     call print
     add esp, 8
@@ -273,7 +275,6 @@ menu_logic:
     call soma16
     add esp, 4
 
-
     jmp .back_op
 
 .op_soma_32:
@@ -283,7 +284,6 @@ menu_logic:
     push ebx ; operando 2
     call soma32
     add esp, 8
-
 
     jmp .back_op
 
@@ -301,7 +301,6 @@ menu_logic:
     call sub16
     add esp, 4
 
-
     jmp .back_op
 
 .op_sub_32:
@@ -311,10 +310,6 @@ menu_logic:
     push ebx ; operando 2
     call sub32
     add esp, 8
-
-    push eax
-    push 31
-    call tostr
 
     jmp .back_op
 
@@ -332,7 +327,6 @@ menu_logic:
     call mul16
     add esp, 4
 
-
     jmp .back_op
 
 .op_mul_32:
@@ -343,7 +337,6 @@ menu_logic:
     call mul32
     add esp, 8
     
-
     jmp .back_op
 
 
@@ -361,7 +354,6 @@ menu_logic:
     call div16
     add esp, 4
 
-
     jmp .back_op
 
 .op_div_32:
@@ -372,7 +364,6 @@ menu_logic:
     call div32
     add esp, 8
     
-
     jmp .back_op
 
 
@@ -390,7 +381,6 @@ menu_logic:
     call expo16
     add esp, 4
 
-
     jmp .back_op
 
 .op_expo32:
@@ -401,7 +391,6 @@ menu_logic:
     call expo32
     add esp, 8
     
-
     jmp .back_op
 
 
@@ -419,7 +408,6 @@ menu_logic:
     call mod16
     add esp, 4
 
-
     jmp .back_op
 
 .op_mod32:
@@ -429,7 +417,6 @@ menu_logic:
     push ebx ; operando 2
     call mod32
     add esp, 8
-    
 
     jmp .back_op
 
@@ -478,20 +465,21 @@ tonum:
     ret
     
 tostr:
-    ; # converte valor numerico para string
-	mov eax,[esp+8]		; EAX - Valor a ser impresso na tela
-	mov	ebx,response+10	; EBX - Digito menos significativo do numero
-	mov	ecx,[esp+4]	; ECX - O tanto de algarismos que o numero contem
+    ; Converte valor numerico para string
+	mov eax,[esp+8]		; valor numerico
+	mov	ebx,response+10	; digito menos significativo
+	mov	ecx,[esp+4]	    ; tamanho do numero
 	mov	edi,10
 
-    ; negativo
+    ; verifica sinal
     cmp eax, 0
     jge .tostr_loop ; positivo
 
-	mov byte [response], '-' ; Coloca o sinal negativo no início da string
-	neg eax ; Transforma o número em negativo (complemento de dois)
-	inc edx ; Ajusta o índice do início do buffer
-	dec ecx ; Decrementa o contador de caracteres
+    ; negativo
+	mov byte [response], '-' ; coloca o sinal negativo no inicio da string
+	neg eax ; converte o numero para negativo
+	inc edx ; incrementa o indice da string
+	dec ecx ; decrementa o tamanho do numero
 
 .tostr_loop:
 	mov	edx,0
