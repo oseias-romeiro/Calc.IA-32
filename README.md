@@ -5,7 +5,7 @@ Projeto de Software Básico que consitem na implementação de um calculadora em
 Foi utilizado um computador Linux com o compilador `nasm` e o ligador `ld` para desenvolvimento do projeto. Além da criação de um [Makfile](./Makefile) para facilitar o processo de compilação do programa.
 
 ## Descrição
-Neste trabalho, tive como pricipal objeto colocar em prática os conhecimentos adquiridos ao decorrer do semestre. Criando um programa de ofrma modular e que usa estrutra de funções, manipulando a pilha de memória e registradores, e assim realizar algumas operações básicas, como: somar, subtrair, multiplicar, dividir, exponenciação e módulo. Além da deteção de overflow nas operações de multiplicação e exponenciação.
+Neste trabalho, tive como pricipal objeto colocar em prática os conhecimentos adquiridos ao decorrer do semestre. Criando um programa de forma modular e que usa estrutra de funções, manipulando a pilha de memória e registradores, e assim realizar algumas operações básicas, como: somar, subtrair, multiplicar, dividir, exponenciação e módulo. Além da deteção de overflow nas operações de multiplicação e exponenciação.
 
 ## Executando
 
